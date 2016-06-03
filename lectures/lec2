@@ -1,0 +1,44 @@
+Don't call display() explicitly
+    use glutPostRedisplay() to request it
+Never call sleep(), as program locks up
+    glutTimerFunc() can be used to call function after a set time
+    use while loop possibly
+
+GL_LINES different from GL_LINE
+GL_LINE_STRIP used to connect a set of points
+    GL_LINE_LOOP reconnects to first point
+
+GL_TRIANGLES
+
+displaying a scene
+    register using glutDisplayFunc()
+    glClear()
+    draw something
+    glFlush() // tell OpenGL you are done
+    glutSwapBuffers()
+    schedule using glutPostRedisplay(), not display()
+
+glTranslate[fd](dx, dy, dz); f(loat) or d(ouble)
+    applies transformation to all dimensions
+glScale[fd](Sx, Sy, Sz)
+    multiplies by a factor 
+glRotate[fd](angle, Ux, Uy, Uz)
+    angle in degrees, not radians
+glPushMatrix() saves state of transformation matrix at that time
+    glPopMatrix() resets to what it was when you did the push
+
+to rotate about another point, move object to origin, rotate, move back
+
+Projections
+    Orthographic: same size regardless of distance
+	glOrtho(left, right, bottom, top, near, far)
+	easiest
+    Perspective
+	glFrustrum(left, right, bottom, top, near, far)
+	GLU convenience functions
+	    gluPerspective(fov, aspect, Znear, Zfar)
+	    gluLookAt(Ex, Ey, Ez, Cx, Cy, Cz, Ux, Uy, Uz)
+
+Dimensions
+OpenGL only deals with cartesian coordinates
+    can use math to modify cartesian by polar

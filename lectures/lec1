@@ -1,0 +1,161 @@
+Willem (Vlakkies) Schreuder
+ECST 121
+willem@prinmath.com
+heading: start with 4229
+
+Using practical OpenGL
+no test, exams
+only homework and project
+
+objectives
+    become conversant in cg, well versed with OpenGL
+
+1/3: Basics
+    projections, transformations, clipping, rendering, text, color
+2/3: Advanced
+    illumination, shading, transparenct
+3/3: Project
+    what interests you: games, modeling, visualization...
+
+Why OpenGL
+    modern, widely used, active support
+    cross-platform
+    open source
+    many language bindings
+
+Examples are in C
+Assignments can be in any language
+    encouraged to use C/C++
+
+Satisfactorily complete all assignments = A
+    submitted on time (usually Sunday @ 11:59pm)
+    completed individually
+	stealing ideas permitted
+	code fragments from web can be used
+	    give credit where due
+	    need substantial improvement
+    No grade = respond to comments and resubmit
+    Not 100 means not satisfactory
+
+OpenGL: A Primer, 3/E
+    Edward Angel
+    Recommended, not required
+OpenGL Programming Guide 8ed (textbook-like)
+    Shreiner et al
+    Download previous editions as PDF
+OpenGL SuperBible
+    older editions more useful
+
+tutorial: nehe.gamedev.net
+code of internals: www.mesa3d.org
+
+Assignment 0: Due tomorrow at noon
+Submit:
+    name and study area
+    platform (hardware, graphics, OS)
+    background and interests in computer graphics
+    project ideas (if you have one)
+    BBA students propose schedule for homework
+
+Professor background
+    Math modeling, simulation and data analysis
+    Fluid Dynamics
+
+Assigments
+    0: Who am I?
+    1: Visualizing the Lorenz Attractor
+    2: Drawing Scene in 3D
+    3: Lighting and textures
+    4: Project Proposal
+    5: Project Review
+    6: Project  Final
+
+Getting started
+    Get OpenGL working on platform
+	on moodle
+    Compile and run Hello World ex
+    apt-get install freeglut3-dev
+    run `glxinfo` check if direct rendering: yes
+
+1: Sunday June 5, 11:59pm
+    Write OpenGL based visualization of Lorenz Attractor
+	minimum: show line path in 3D (demo in class)
+
+For when website down:
+    www.prinmath.com/csci5229
+
+2: Sunday June 12th
+    write program to visualize 3D scene, solid 3D objects
+	create all objects yourself
+
+3: Add lighting and textures to 3D scene
+    A lot harder than 1, 2
+
+Project:
+    program with significant graphics component
+	maybe something relevant to work/research?
+	graphical frontend to simulation
+	graphical portion of game
+    Proposal: Monday June 20th
+    Review: Saturday June 25th
+    Final: Tuesday June 28th
+    June 30th: Show and tell
+    half of total points
+	final grade is only one that counts
+
+name executables hw1, hw2, hw3, etc
+    use proper Makefile
+    Window title to Assignment X: Your Name
+    include # of hours spent on task
+
+History of CG
+    visual cortex very good at interpreting visual patterns
+    pen plotter: moving line on scrolling paper
+    modern graphics came around mid-80s    
+    OpenGL originally SGI IrisGL
+	hides details of hardware
+
+OpenGL
+    Called a language, but really an API
+    Specs controlled by OpenGL Architecture Review Board (ARB)
+    Multiple implementations by different vendors
+    Does real-time graphics displayed on screen
+	not sound, printing
+    Need GLX/WGL/AGL for windowing and input (avoid!)
+	professor uses GLUT
+    We will use OpenGL 2.0
+	feature rich
+	flat learning curve
+    GLU: OpenGL Utility
+	Higher level and convenience functions
+    GLUT: GL Utility Toolkit
+	Access to OS and Window System
+	Open windows, setting size and capabilities
+
+Usually only need
+    #define GL_GLEXT_PROTOTYPES
+    #include <GL/glut.h>
+	/usr/include/GL on most systems
+    linking on Ubuntu requires excessive linking (for compiling?)
+    convention:
+	glDoSomethingXy()
+	X is 2, 3, or 4 for dimension
+	y is variable type
+	    b = GLbyte
+	    s = GLshort
+	    i = GLint
+	few functions return values
+	most functions created by name mangling
+	constants: GL_SOMETHING
+	GLUT_SOMETHING different from GLU_SOMETHING
+	
+compiling:
+    gcc -oWall -o ex1 ex1.c -lglut -lGL
+
+glEnable(GL_DEPTH_TEST)
+    hide the object if behind another
+    doesn't un-hide it though
+	need glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+
+call ErrCheck using int err = glGetError() before displaying
+    print out to stderr gluErrorString(err)
