@@ -4,11 +4,11 @@
  *  Draw 27 cubes to demonstrate orthogonal & prespective projections
  *
  *  Key bindings:
-  m          Toggle between perspective and orthogonal
+  m          Toggle modes between orthogonal (0), perspective (1), first-person navigation (2)
   +/-        Changes field of view for perspective
-  w					 Move forward
+  w					 Move forward (only in mode 2)
   a          Turn left
-  s					 Move backwards
+  s					 Move backwards (only in mode 2)
   d					 Turn right
   l/r arrows     Change view angle
   PgDn/PgUp  Zoom in and out
@@ -29,9 +29,9 @@
 #include <GL/glut.h>
 #endif
 
-int mode = 1;
+int mode = 0;       // Start in orthogonal view
 int th = -45;         //  Azimuth of view angle
-int ph = 0;         //  Elevation of view angle
+int ph = 5;         //  Elevation of view angle
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 6.0;   //  Size of world
@@ -246,12 +246,18 @@ void display()
    glEnable(GL_DEPTH_TEST);
    //  Undo previous transformations
    glLoadIdentity();
-   //  Perspective - set eye position
-   if (mode)
+   if (mode == 2)
    {
+      //  First person navigation - set eye position
       lx = Sin(th);
       lz = -Cos(th);
       gluLookAt(camX,eyeHeight,camZ , camX + lx,eyeHeight,camZ + lz , 0,1,0);
+   } else if (mode == 1) {
+      // Perspective mode without first person view
+      double Ex = -2*dim*Sin(th)*Cos(ph);
+      double Ey = +2*dim        *Sin(ph);
+      double Ez = +2*dim*Cos(th)*Cos(ph);
+      gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
    }
    // Orthogonal - set world orientation
    else
@@ -292,7 +298,7 @@ void display()
    }
    //  Display parameters
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f FOV=%d",th,ph,dim,fov);
+   Print("Angle=%d,%d  Dim=%.1f FOV=%d mode=%d",th,ph,dim,fov,mode);
    //  Render the scene and make it visible
    glFlush();
    glutSwapBuffers();
@@ -344,10 +350,11 @@ void key(unsigned char ch,int x,int y)
       th = -45;
       ph = 0;
    //  Switch display mode
-   } else if (ch == 'm')
-      mode = !mode;
+   } else if (ch == 'm') {
+      mode += 1;
+      mode %= 3;
    //  Change field of view angle
-   else if (ch == '-' && ch>1)
+   } else if (ch == '-' && ch>1)
       fov--;
    else if (ch == '+' && ch<179)
       fov++;
