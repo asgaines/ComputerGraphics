@@ -7,6 +7,7 @@
  */
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
+#include <strings.h>
 #include "CSCIx229.h"
 int mode = 2;       // Start in first person view
 int th = 0;         //  Azimuth of view angle
@@ -23,6 +24,8 @@ double camY = PLAYER_HEIGHT; // Height of eyes above the ground (in meters). Cha
 float crawlHeight = 0.5; // Used for later calculations
 float lx = 0.0f, lz = -1.0f; // actual vector representing the camera's direction
 float dt = 0.125f; // Change in time between scenes
+bool godMode = false; // Determines whether the user can fly and go through walls
+bool escapeMode = false; // If set, player starts at treasure chest and must get back to entrance; skips seeking
 // Initialize stalagtite (roof) /stalagmite (ground) variables
 // Repeating pattern based on number used
 #define NUM_OFFSETS 81
@@ -1126,9 +1129,10 @@ void display()
 
    // If light hasn't been acquired yet, have it circling in the second room
    float lightOffsetX = lightAcquired ? camX : lightX;
+   float lightOffsetY = lightAcquired ? camY : lightY;
    float lightOffsetZ = lightAcquired ? camZ : lightZ;
    float lightRadius = 2.0;
-   float Position[] = {lightRadius*Cos(zh) + lightOffsetX, lightY + Cos(4*zh)/6, lightRadius*Sin(zh) + lightOffsetZ, 1};
+   float Position[] = {lightRadius*Cos(zh) + lightOffsetX, lightOffsetY + Cos(4*zh)/6, lightRadius*Sin(zh) + lightOffsetZ, 1};
    if (light)
    {//  Translate intensity to color vectors 
       if (treasureAcquired)
@@ -1449,11 +1453,15 @@ void keyboardKey(unsigned char ch,int x,int y)
       //  Move forward
       camX += currentSpeed * lx * dt;
       camZ += currentSpeed * lz * dt;
+      if (godMode)
+         camY += currentSpeed * Sin(ph) * dt;
       checkCollision();
    //  Move backwards
    } else if (ch == 's') {
       camX -= (currentSpeed * 0.75) * lx * dt;
       camZ -= (currentSpeed * 0.75) * lz * dt;
+      if (godMode)
+         camY -= currentSpeed * Sin(ph) * dt;
       checkCollision();
    }
    else if (ch=='b' && ambient>0)
@@ -1642,6 +1650,48 @@ void setUp()
    do { // Place the key
       keyPos = rand() % 4;
    } while (keyPos == chestPos); // Cannot be in same place as chest
+
+   if (escapeMode) {
+      treasureAcquired = true;
+      lightAcquired = true;
+      chestUnlocked = true;
+      Mix_PlayMusic(collapse_music,-1);
+
+      // Position player by chest to start escaping
+      switch (chestPos) {
+         case 0:  
+            // Top left
+            camX = -36;
+            camZ = -113;
+            th = 180;
+            break;
+         case 1:  
+            // Top right
+            camX = 96;
+            camZ = -113;
+            th = 180;
+            break;
+         case 2:  
+            // Bottom left
+            camX = -8;
+            camZ = -53;
+            th = 0;
+            break;
+         case 3:  
+            // Bottom right
+            camX = 124;
+            camZ = 53;
+            th = 0;
+            break;
+      }
+   }
+
+   if (godMode) {
+      // Don't create railings
+      railingsLoaded = true;
+      // God can see everything
+      lightAcquired = true;
+   }
 }
 
 void idle()
@@ -1660,6 +1710,12 @@ void idle()
  */
 int main(int argc,char* argv[])
 {
+   if (argc > 1) {
+      if (strcmp(argv[1], "godMode") == 0)
+         godMode = true;
+      if (strcmp(argv[1], "escapeMode") == 0)
+         escapeMode = true;
+   }
    //  Initialize audio
    if (Mix_OpenAudio(44100,AUDIO_S16SYS,2,4096)) Fatal("Cannot initialize audio\n");
    //  Load "The Wall"
@@ -1674,7 +1730,6 @@ int main(int argc,char* argv[])
    if (!death_music) Fatal("Cannot load death.mp3\n");
    //  Play main song
    Mix_PlayMusic(main_music,-1);
-
 
    // Set up some values for the program
    setUp();

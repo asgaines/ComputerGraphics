@@ -16,6 +16,11 @@ Points of interest
 - Triggered alarm causes flashing light and cave to collapse, requiring a dash to the cave entrance to survive
 - Entire cave rumbles when near total collapse
 
+Cheats:
+- Run program with additional command to activate cheats:
+- `./final godMode` grants you the ability to fly and walk through walls. You can see the key and treasure easily from here!
+- `./final escapeMode` will place you at treasure chest with alarm started and you will have to escape!
+
 
 Key bindings
   mouse click          Interact with select objects
