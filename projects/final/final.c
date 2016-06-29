@@ -7,7 +7,7 @@
  */
 #include "CSCIx229.h"
 int mode = 2;       // Start in first person view
-int th = 0;         //  Azimuth of view angle
+int th = -60;// 0;         //  Azimuth of view angle
 int ph = 5;         //  Elevation of view angle
 int fov = 30;//45;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
@@ -15,8 +15,8 @@ double dim = 9.0;   //  Size of world
 double w = 1;       // W variable
 // Globals determining camera position/orientation
 #define PLAYER_HEIGHT 1.75
-double camX = 0.0;
-double camZ = 15;//19.0;
+double camX = 30.0;
+double camZ = -100.0;//19.0;
 double camY = PLAYER_HEIGHT; // Height of eyes above the ground (in meters). Changes later
 float crawlHeight = 0.5; // Used for later calculations
 float lx = 0.0f, lz = -1.0f; // actual vector representing the camera's direction
@@ -25,6 +25,7 @@ float dt = 0.125f; // Change in time between scenes
 // Repeating pattern based on number used
 #define NUM_OFFSETS 81
 double offsets[NUM_OFFSETS][3]; // x, y offsets, z offset of tip
+float offsetMagnitude = 0.625; // Maximum offset possible
 unsigned int textures[5]; // Texture names (IDs)
 float chestDim = 0.6; // height, length, 1/2 width of chest
 int chestPos; // Randomized position of chest, 4 possible locations
@@ -32,7 +33,7 @@ int keyPos; // Randomized position of key, any other location except where chest
 // Speed of walking
 #define WALK_SPEED 5.0 / 1000
 float currentSpeed = WALK_SPEED;
-bool lightAcquired = false; // Trigger controlling whether light is rotating around player
+bool lightAcquired = true; // Trigger controlling whether light is rotating around player
 bool keyAcquired = false; // Determines whether chest can be opened or not
 bool chestUnlocked = false; // Determines when chest opens, just before treasure acquired
 bool treasureAcquired = true; // treasureAcquired triggered when treasure taken
@@ -56,8 +57,8 @@ int at2=0;        //  Quadratic attenuation %
 int side = 0; // Two sided mode
 int local = 0;
 int emission  =   50;  // Emission intensity (%)
-int ambient   =  100;  // Ambient intensity (%)
-int diffuse   = 50;  // Diffuse intensity (%)
+int ambient   =  0;  // Ambient intensity (%)
+int diffuse   = 100;  // Diffuse intensity (%)
 int specular  =   35;  // Specular intensity (%)
 int shininess =   0;  // Shininess (power of two)
 float shinyvec[1];    // Shininess (value)
@@ -494,6 +495,137 @@ void key(double x, double y, double z, int th, int ph)
    glPopMatrix();
 }
 
+/*
+ * Single crystal stalk, aggregated for a larger arrangement by crystalArrangement
+ */
+void crystal(double x, double y, double z, double dx, double dy, double dz, int rotX, int rotY, int rotZ)
+{
+   glPushMatrix();
+   glTranslated(x, y, z);
+   glRotated(rotX, 1, 0, 0);
+   glRotated(rotY, 0, 1, 0);
+   glRotated(rotZ, 0, 0, 1);
+   glScaled(dx, dy, dz);
+
+   float root3Over2 = 0.866; // In case compiler doesn't replace calculations automatically
+
+   glBegin(GL_QUADS);
+   // Base of crystal
+   // Front face
+   glNormal3f(0, 0, 1);
+   glVertex4f(-0.5, 0, root3Over2, w);
+   glVertex4f(0.5, 0, root3Over2, w);
+   glVertex4f(0.5, 2, root3Over2, w);
+   glVertex4f(-0.5, 2, root3Over2, w);
+   // Right front face
+   glNormal3f(1, 0, 1);
+   glVertex4f(0.5, 0, root3Over2, w);
+   glVertex4f(1, 0, 0, w);
+   glVertex4f(1, 2, 0, w);
+   glVertex4f(0.5, 2, root3Over2, w);
+   // Right back face
+   glNormal3f(1, 0, -1);
+   glVertex4f(1, 0, 0, w);
+   glVertex4f(0.5, 0, -root3Over2, w);
+   glVertex4f(0.5, 2, -root3Over2, w);
+   glVertex4f(1, 2, 0, w);
+   // Back face
+   glNormal3f(0, 0, -1);
+   glVertex4f(0.5, 0, -root3Over2, w);
+   glVertex4f(-0.5, 0, -root3Over2, w);
+   glVertex4f(-0.5, 2, -root3Over2, w);
+   glVertex4f(0.5, 2, -root3Over2, w);
+   // Left back face
+   glNormal3f(-1, 0, -1);
+   glVertex4f(-0.5, 0, -root3Over2, w);
+   glVertex4f(-1, 0, 0, w);
+   glVertex4f(-1, 2, 0, w);
+   glVertex4f(-0.5, 2, -root3Over2, w);
+   // Left front face
+   glNormal3f(-1, 0, 1);
+   glVertex4f(-1, 0, 0, w);
+   glVertex4f(-0.5, 0, root3Over2, w);
+   glVertex4f(-0.5, 2, root3Over2, w);
+   glVertex4f(-1, 2, 0, w);
+
+   glEnd(); // End of crystal base
+
+   glBegin(GL_TRIANGLES);
+   // Tip of crystal
+   // Front face
+   glNormal3f(0, 0, 1);
+   glVertex4f(-0.5, 2, root3Over2, w);
+   glVertex4f(0.5, 2, root3Over2, w);
+   glVertex4f(0, 3, 0, w);
+   // Right front face
+   glNormal3f(1, 0, 1);
+   glVertex4f(0.5, 2, root3Over2, w);
+   glVertex4f(1, 2, 0, w);
+   glVertex4f(0, 3, 0, w);
+   // Right back face
+   glNormal3f(1, 0, -1);
+   glVertex4f(1, 2, 0, w);
+   glVertex4f(0.5, 2, -root3Over2, w);
+   glVertex4f(0, 3, 0, w);
+   // Back face
+   glNormal3f(0, 0, -1);
+   glVertex4f(0.5, 2, -root3Over2, w);
+   glVertex4f(-0.5, 2, -root3Over2, w);
+   glVertex4f(0, 3, 0, w);
+   // Left back face
+   glNormal3f(-1, 0, -1);
+   glVertex4f(-0.5, 2, -root3Over2, w);
+   glVertex4f(-1, 2, 0, w);
+   glVertex4f(0, 3, 0, w);
+   // Left front face
+   glNormal3f(-1, 0, 1);
+   glVertex4f(-1, 2, 0, w);
+   glVertex4f(-0.5, 2, root3Over2, w);
+   glVertex4f(0, 3, 0, w);
+
+   glEnd(); // End of tip
+
+   glPopMatrix();
+}
+
+/*
+ * Small growth of a few crystals
+ * Gives a cohesive look
+ */
+void crystalArrangement(double x, double y, double z, double rotX, double rotY, double rotZ, char color)
+{
+   glPushMatrix();
+   
+   glTranslated(x + rumbleX, y, z + rumbleZ);
+   glRotated(rotX, 1, 0, 0);
+   glRotated(rotY, 0, 1, 0);
+   glRotated(rotZ, 0, 0, 1);
+   glScaled(0.2, 0.2, 0.2);
+
+   switch (color) {
+      case 'b':
+         glColor3f(0, 0, 0.7);
+         break;
+      case 'g':
+         glColor3f(0, 0.7, 0);
+         break;
+      case 'r':
+         glColor3f(0.7, 0, 0);
+         break;
+   }
+   
+   // Draw the configuration
+   crystal(0, 0, 0, 0.5, 1.0, 0.5, 0, 0, -10); // Main one, tall and very slightly to left
+   crystal(0, -0.3, 0, 0.4, 0.9, 0.4, -20, 0, -35); // Sticking to right
+   crystal(0, -0.3, 0, 0.35, 0.8, 0.35, 30, 0, 30);
+   crystal(0, -0.3, 0, 0.25, 0.75, 0.25, 30, 0, -30);
+   crystal(0, -0.3, 0, 0.3, 0.7, 0.3, -40, 0, 0);
+   crystal(0, -0.3, 0, 0.2, 0.7, 0.2, 50, 0, 30);
+   crystal(0, -0.3, 0, 0.15, 0.6, 0.15, -50, 0, 30);
+
+   glPopMatrix();
+}
+
 void cone(bool down, double x, double y, double z, double dy)
 {
    glPushMatrix();
@@ -508,7 +640,7 @@ void cone(bool down, double x, double y, double z, double dy)
    float height = (down) ? 1.5 : 0.75;
    glScaled(radius, height + dy, radius);
    glBegin(GL_TRIANGLES);
-   glColor3f(0.2, 0.2, 0.2);
+   glColor3f(0.25, 0.25, 0.25);
    int dist = sqrt((camX - x)*(camX - x) + (camZ - z)*(camZ - z));
    int degreeStep;
    // Optimize number of cone faces based on distance from user
@@ -572,7 +704,7 @@ void room(double x, double y, double z, double dx, double dy, double dz, bool fr
    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
    glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-   glColor3f(0.15, 0.15, 0.15);
+   glColor3f(0.25, 0.25, 0.25);
    double divLen = 2.0 / divs; // Length of each division
    glBegin(GL_QUADS);
    
@@ -587,7 +719,9 @@ void room(double x, double y, double z, double dx, double dy, double dz, bool fr
          glTexCoord2f(0, 0); glVertex4f(divLen*col - 1, 0, divLen*row - 1, w);
       }
    }
+   glEnd();
    // Draw the roof/ceiling of the cave room
+   glBegin(GL_QUADS);
    glNormal3f(0, -1, 0);
    for (int row = 0; row < divs; row++) {
       for (int col = 0; col < divs; col++) {
@@ -656,6 +790,21 @@ void room(double x, double y, double z, double dx, double dy, double dz, bool fr
    glEnd();
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
+
+   // Put crystal arrangements in room
+   if (sqrt((camX - x)*(camX - x) + (camZ - z)*(camZ - z)) < 75) {
+      crystalArrangement(x + (offsets[abs((int)x) % NUM_OFFSETS][0]/offsetMagnitude * (dx - 0.5)), y, z + (offsets[abs((int)z) % NUM_OFFSETS][2]/offsetMagnitude * (dz - 0.5)), 0, 0, 0, 'b'); // On floor
+      crystalArrangement(x + (offsets[abs((int)x) + 1 % NUM_OFFSETS][0]/offsetMagnitude * (dx - 0.5)), y + dy, z + (offsets[abs((int)z) + 1 % NUM_OFFSETS][2]/offsetMagnitude * (dz - 0.5)), 180, 0, 0, 'b'); // On roof/ceiling
+      if (front)
+         crystalArrangement(x + (offsets[abs((int)x) + 2 % NUM_OFFSETS][0]/offsetMagnitude * (dx - 0.5)), y + dy/2 + (offsets[abs((int)z) + 2 % NUM_OFFSETS][1]/offsetMagnitude * (dy/2 - 0.5)), z - dz, 90, 0, 0, 'g');
+      if (back && x != 0) // Ugly way of protecting against crystal in cave entrance
+         crystalArrangement(x + (offsets[abs((int)x) + 3 % NUM_OFFSETS][0]/offsetMagnitude * (dx - 0.5)), y + dy/2 + (offsets[abs((int)z) + 3 % NUM_OFFSETS][1]/offsetMagnitude * (dy/2 - 0.5)), z + dz, -90, 0, 0, 'g');
+      if (left)
+         crystalArrangement(x - dx, y + dy/2 + (offsets[abs((int)z) + 4 % NUM_OFFSETS][1]/offsetMagnitude * (dy/2 - 0.5)), z + (offsets[abs((int)z) + 4 % NUM_OFFSETS][2]/offsetMagnitude * (dz - 0.5)), 0, 0, -90, 'r');
+      if (right)
+         crystalArrangement(x + dx, y + dy/2 + (offsets[abs((int)z) + 5 % NUM_OFFSETS][1]/offsetMagnitude * (dy/2 - 0.5)), z + (offsets[abs((int)z) + 5 % NUM_OFFSETS][2]/offsetMagnitude * (dz - 0.5)), 0, 0, 90, 'r');
+   }
+
    if (cones) {
       // Draw the stalactites/stalagmites
       float collapseFactor = collapseAmount(dy);
@@ -685,7 +834,8 @@ void wall(double x1, double z1, double x2, double z2, double height, double elev
    double dx = abs(x1 - x2);
    double dz = abs(z1 - z2);
 
-   glTranslated((x1 + x2) / 2.0 + rumbleX, elevation, (z1 + z2) / 2.0 + rumbleZ);
+   float dElevation = elevation > 0 ? collapseAmount(elevation) : 0;
+   glTranslated((x1 + x2) / 2.0 + rumbleX, elevation - dElevation, (z1 + z2) / 2.0 + rumbleZ);
    glScaled(dx / 2.0, height - collapseAmount(height), dz / 2.0);
 
    glColor3f(0.25, 0.25, 0.25);
@@ -725,6 +875,29 @@ void wall(double x1, double z1, double x2, double z2, double height, double elev
    glEnd();
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
+
+   // Place a crystal arrangement on wall
+   /*
+   if (dx) {
+      float xAve = (x1 + x2) / 2;
+      if (x2 > x1) {
+         // Wall is facing back
+         crystalArrangement(xAve + (offsets[(int)x1 % NUM_OFFSETS][0]/offsetMagnitude * (dx/2 - 1)), elevation + 1 + (offsets[(int)z1 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), z1, 90, 0, 0);
+      } else {
+         // Wall is facing front
+         crystalArrangement(xAve + (offsets[(int)x2 % NUM_OFFSETS][0]/offsetMagnitude * (dx/2 - 1)), elevation + 1 + (offsets[(int)z2 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), z1, -90, 0, 0);
+      }
+   } else {
+      float zAve = (z1 + z2) / 2;
+      if (z2 > z1) {
+         // Wall is facing left
+         crystalArrangement(x1, elevation + 1 + (offsets[(int)x1 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), zAve + (offsets[(int)z1 % NUM_OFFSETS][2]/offsetMagnitude * (dz/2 - 1)), 0, 0, 90);
+      } else {
+         // Wall is facing right
+         crystalArrangement(x1, elevation + 1 + (offsets[(int)x2 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), zAve + (offsets[(int)z2 % NUM_OFFSETS][2]/offsetMagnitude * (dz/2 - 1)), 0, 0, -90);
+      }
+   }
+   */
 }
 
 void caveEntrance()
@@ -994,6 +1167,9 @@ void display()
    }
    else
       glDisable(GL_LIGHTING);
+
+   //crystalArrangement(-6, 3, 0, 0, 0, -90);
+   //crystalArrangement(1, 0, 5, 0, 0, 0);
 
    // Starting cave room
    glNormal3f(-1, 0, 0); wall(42, -32, 42, -28, 4, 0); // Patch right wall
@@ -1408,7 +1584,7 @@ void mouseButton(int button, int state, int x, int y)
  */
 void mouseMove(int x, int y)
 {
-   int sensitivity = 12; // Increasing value decreases sensitivity
+   int sensitivity = 24; // Increasing value decreases sensitivity
    th = (th + (x - glutGet(GLUT_WINDOW_WIDTH) / 2) / sensitivity) % 360;
    ph = (ph - (y - glutGet(GLUT_WINDOW_HEIGHT) / 2) / (sensitivity)) % 360;
    if (ph > 90)
@@ -1441,12 +1617,14 @@ void setUp()
    srand(time(NULL));
    // Define 25 position with offsets for cones
    for (int pos = 0; pos < NUM_OFFSETS; pos++) {
-      // Offsets will be between -0.75 and 0.75 inclusive
+      // Offsets will be between -0.625 and 0.625 inclusive
       offsets[pos][0] = ((float)rand()/(float)RAND_MAX - 0.5) * 1.25; // x offset added to position
       offsets[pos][1] = ((float)rand()/(float)RAND_MAX - 0.5) * 1.25; // z offset added to position
-      offsets[pos][2] = ((float)rand()/(float)RAND_MAX - 0.5) * 1.25;// * 0.25; // Offset of cone tip
+      offsets[pos][2] = ((float)rand()/(float)RAND_MAX - 0.5) * 1.25; // Offset of cone tip
    }
+
    chestPos = rand() % 4; // Place the chest
+
    do { // Place the key
       keyPos = rand() % 4;
    } while (keyPos == chestPos); // Cannot be in same place as chest
