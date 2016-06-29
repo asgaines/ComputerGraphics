@@ -3,35 +3,31 @@ final: Final Project
 Andrew Gaines
 CSCI4229/5229 Summer 2016
 
-Game in cave with objective of opening treasure chest and retrieving object before returning to origin. Click to interact with select objects
+Gameplay:
+- Setting is in mysterious cave
+- Objective is to retrieve stolen treasure and return to cave entrance
+- Left-click to interact with select objects (lantern, key, treasure chest)
 
-State of project:
-- Cave layout complete
-- First person navigation working
-- Mouse movement to be refined
-- Game objectives implemented successfully
-- Lacking object collision avoidance (please do not walk through walls)
-- Lacking cave collapse causing game over
-- Still commented-out code in project
+Points of interest
+- Stalactites/stalagmites lose detail (# vertices) as distance from user increases
+- Collect key, randomly placed in one of 4 preconfigured locations within cave
+- Having key lets you open treasure chest, in one of remaining 3 locations
+- Taking treasure from opened chest triggers alarm
+- Triggered alarm causes flashing light and cave to collapse, requiring a dash to the cave entrance to survive
+- Entire cave rumbles when near total collapse
 
-Future aims
-- Add God mode
-- Add sound
-- Bind 'a' and 'd' to strafing
-- Add chest opening and key turning animation
 
 Key bindings
   mouse click          Interact with select objects
   mouse movement	   Limited proficiency first person movement
-  w          Move forward (only in mode 2)
+  w          Strafe forward
   a          Turn left
-  s          Move backwards (only in mode 2)
-  d          Turn right
-  m          Toggle modes between orthogonal (0), perspective (1), first-person navigation (2)
+  s          Move backwards
+  d          Strafe right
   +/-        Changes field of view for perspective
   l/r arrows     Change view angle
   PgDn/PgUp  Zoom in and out
-  z			 Start/stop light source moving
+  z			 Start/stop light source around center of revolution
   b/B        Change ambient light levels
   e/E        Change emission amount
   i/I        Change diffuse lighting amount
@@ -40,4 +36,4 @@ Key bindings
   0          Reset view angle
   ESC        Exit
 
-Approximate time: 18hr
+Approximate time: 30hr

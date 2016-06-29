@@ -7,16 +7,16 @@
  */
 #include "CSCIx229.h"
 int mode = 2;       // Start in first person view
-int th = -60;// 0;         //  Azimuth of view angle
-int ph = 5;         //  Elevation of view angle
-int fov = 30;//45;       //  Field of view (for perspective)
+int th = 0;         //  Azimuth of view angle
+int ph = 0;         //  Elevation of view angle
+int fov = 45;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 9.0;   //  Size of world
 double w = 1;       // W variable
 // Globals determining camera position/orientation
 #define PLAYER_HEIGHT 1.75
-double camX = 30.0;
-double camZ = -100.0;//19.0;
+double camX = 0.0;
+double camZ = 20.0;
 double camY = PLAYER_HEIGHT; // Height of eyes above the ground (in meters). Changes later
 float crawlHeight = 0.5; // Used for later calculations
 float lx = 0.0f, lz = -1.0f; // actual vector representing the camera's direction
@@ -33,10 +33,10 @@ int keyPos; // Randomized position of key, any other location except where chest
 // Speed of walking
 #define WALK_SPEED 5.0 / 1000
 float currentSpeed = WALK_SPEED;
-bool lightAcquired = true; // Trigger controlling whether light is rotating around player
+bool lightAcquired = false; // Trigger controlling whether light is rotating around player
 bool keyAcquired = false; // Determines whether chest can be opened or not
 bool chestUnlocked = false; // Determines when chest opens, just before treasure acquired
-bool treasureAcquired = true; // treasureAcquired triggered when treasure taken
+bool treasureAcquired = false; // treasureAcquired triggered when treasure taken
 bool hint = false;
 bool victory = false;
 bool gameOver = false;
@@ -52,8 +52,8 @@ float rumbleZ = 0.0; // How much Z axis is rumbled when shaking
 // Light values
 bool light = true;
 int at0=100;      //  Constant  attenuation %
-int at1=50;        //  Linear    attenuation %
-int at2=0;        //  Quadratic attenuation %
+int at1=0;        //  Linear    attenuation %
+int at2=5;        //  Quadratic attenuation %
 int side = 0; // Two sided mode
 int local = 0;
 int emission  =   50;  // Emission intensity (%)
@@ -83,6 +83,10 @@ double min(double x1, double x2)
    return (x1 < x2) ? x1 : x2;
 }
 
+/*
+ * Add a railing to the array to be checked for collision avoidance purposes
+ * Ensure array only built once, flag set in display() after first build
+ */
 void addRailing(double x1, double z1, double x2, double z2, double y)
 {
    if (!railingsLoaded) {
@@ -307,6 +311,9 @@ static void chest(double x,double y,double z,
    glEnable(GL_CULL_FACE);
 }
 
+/*
+ * Key used to unlock the treasure chest
+ */
 void key(double x, double y, double z, int th, int ph)
 {
    glPushMatrix();
@@ -626,6 +633,10 @@ void crystalArrangement(double x, double y, double z, double rotX, double rotY, 
    glPopMatrix();
 }
 
+/* 
+ * Stalactite or stalagmite for the cave feel
+ * Detail decreases with distance for performance purposes
+ */
 void cone(bool down, double x, double y, double z, double dy)
 {
    glPushMatrix();
@@ -677,6 +688,10 @@ void cone(bool down, double x, double y, double z, double dy)
    glDisable(GL_TEXTURE_2D);
 }
 
+/*
+ * Return how much a wall should be moved down based on starting height
+ * Allows cave to reach minimum level at same time
+ */
 double collapseAmount(double startHeight)
 {
    if (treasureAcquired)
@@ -691,6 +706,9 @@ double collapseAmount(double startHeight)
    return 0;
 }
 
+/*
+ * Draw a cave room, specifying whether to include walls and stalactites/stalagmites
+ */
 void room(double x, double y, double z, double dx, double dy, double dz, bool front, bool back, bool left, bool right, int divs, bool cones)
 {
    //  Save transformation
@@ -823,9 +841,13 @@ void room(double x, double y, double z, double dx, double dy, double dz, bool fr
    }
 }
 
+/*
+ * Draw a single wall
+ */
 void wall(double x1, double z1, double x2, double z2, double height, double elevation)
 {
    glPushMatrix();
+
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
    glBindTexture(GL_TEXTURE_2D, textures[1]);
@@ -875,39 +897,17 @@ void wall(double x1, double z1, double x2, double z2, double height, double elev
    glEnd();
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
-
-   // Place a crystal arrangement on wall
-   /*
-   if (dx) {
-      float xAve = (x1 + x2) / 2;
-      if (x2 > x1) {
-         // Wall is facing back
-         crystalArrangement(xAve + (offsets[(int)x1 % NUM_OFFSETS][0]/offsetMagnitude * (dx/2 - 1)), elevation + 1 + (offsets[(int)z1 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), z1, 90, 0, 0);
-      } else {
-         // Wall is facing front
-         crystalArrangement(xAve + (offsets[(int)x2 % NUM_OFFSETS][0]/offsetMagnitude * (dx/2 - 1)), elevation + 1 + (offsets[(int)z2 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), z1, -90, 0, 0);
-      }
-   } else {
-      float zAve = (z1 + z2) / 2;
-      if (z2 > z1) {
-         // Wall is facing left
-         crystalArrangement(x1, elevation + 1 + (offsets[(int)x1 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), zAve + (offsets[(int)z1 % NUM_OFFSETS][2]/offsetMagnitude * (dz/2 - 1)), 0, 0, 90);
-      } else {
-         // Wall is facing right
-         crystalArrangement(x1, elevation + 1 + (offsets[(int)x2 % NUM_OFFSETS][2]/offsetMagnitude * (height - 1)), zAve + (offsets[(int)z2 % NUM_OFFSETS][2]/offsetMagnitude * (dz/2 - 1)), 0, 0, -90);
-      }
-   }
-   */
 }
 
+/*
+ * Draw the entrance to the cave
+ */
 void caveEntrance()
 {
    glPushMatrix();
 
    glTranslated(0 + rumbleX, 0, 24 + rumbleZ);
    glScaled(1, 3, 0);
-
-   // glBindTexture(GL_TEXTURE_2D, textures[4]);
 
    glColor3f(1, 1, 1);
    glNormal3f(0, 0, 1);
@@ -1163,7 +1163,7 @@ void display()
       glLightfv(GL_LIGHT1,GL_POSITION,Position);
       glLightf(GL_LIGHT1,GL_CONSTANT_ATTENUATION ,at0/100.0);
       glLightf(GL_LIGHT1,GL_LINEAR_ATTENUATION   ,at1/100.0);
-      glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,at2/100.0);
+      glLightf(GL_LIGHT1,GL_QUADRATIC_ATTENUATION,at2/2/100.0);
    }
    else
       glDisable(GL_LIGHTING);
