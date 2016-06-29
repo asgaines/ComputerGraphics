@@ -5,6 +5,8 @@
  *
  *  For controls, see README
  */
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
 #include "CSCIx229.h"
 int mode = 2;       // Start in first person view
 int th = 0;         //  Azimuth of view angle
@@ -16,7 +18,7 @@ double w = 1;       // W variable
 // Globals determining camera position/orientation
 #define PLAYER_HEIGHT 1.75
 double camX = 0.0;
-double camZ = 20.0;
+double camZ = 18.0;
 double camY = PLAYER_HEIGHT; // Height of eyes above the ground (in meters). Changes later
 float crawlHeight = 0.5; // Used for later calculations
 float lx = 0.0f, lz = -1.0f; // actual vector representing the camera's direction
@@ -72,6 +74,11 @@ int numRailings = 0;
 double railings[79][5];
 float railingOverhang = 0.5;
 bool railingsLoaded = false;
+// Music and sounds
+Mix_Music* main_music;
+Mix_Music* collapse_music;
+Mix_Music* victory_music;
+Mix_Music* death_music;
 
 double max(double x1, double x2)
 {
@@ -611,13 +618,13 @@ void crystalArrangement(double x, double y, double z, double rotX, double rotY, 
 
    switch (color) {
       case 'b':
-         glColor3f(0, 0, 0.7);
+         glColor3f(0, 0, 0.5);
          break;
       case 'g':
-         glColor3f(0, 0.7, 0);
+         glColor3f(0, 0.5, 0);
          break;
       case 'r':
-         glColor3f(0.7, 0, 0);
+         glColor3f(0.5, 0, 0);
          break;
    }
    
@@ -1055,8 +1062,12 @@ void display()
    if (gameOver || victory){
       return;
    }
-   if (treasureAcquired && sqrt(camX*camX + (camZ - 23)*(camZ - 23)) < 5) // Have the treasure and at the entrance/exit
+
+   if (treasureAcquired && !victory && sqrt(camX*camX + (camZ - 23)*(camZ - 23)) < 5) { // Have the treasure and at the entrance/exit
       victory = true;
+      Mix_PlayMusic(victory_music,-1);
+   }
+
    if (treasureAcquired && !victory) {
       // Calculate offsets to make cave appear to rumble. Used for ceiling/roof and stalactites
       if (collapseImminent) {
@@ -1065,8 +1076,10 @@ void display()
       }
       if ((glutGet(GLUT_ELAPSED_TIME) - collapseStart) > collapseTime*rumblePercent)
          collapseImminent = true;
-      if ((glutGet(GLUT_ELAPSED_TIME) - collapseStart) > collapseTime)
+      if ((glutGet(GLUT_ELAPSED_TIME) - collapseStart) > collapseTime){
          gameOver = true;
+         Mix_PlayMusic(death_music,-1);
+      }
    }
    float startLoop = glutGet(GLUT_ELAPSED_TIME);
    shinyvec[0] = shininess<0 ? 0 : pow(2.0,shininess);
@@ -1530,6 +1543,7 @@ void mouseButton(int button, int state, int x, int y)
                            if (chestUnlocked && !treasureAcquired) {
                               treasureAcquired = true;
                               collapseStart = glutGet(GLUT_ELAPSED_TIME);
+                              Mix_PlayMusic(collapse_music,-1);
                            }
                            chestUnlocked = true;
                         } else {
@@ -1646,6 +1660,22 @@ void idle()
  */
 int main(int argc,char* argv[])
 {
+   //  Initialize audio
+   if (Mix_OpenAudio(44100,AUDIO_S16SYS,2,4096)) Fatal("Cannot initialize audio\n");
+   //  Load "The Wall"
+   main_music = Mix_LoadMUS("sound/main.mp3");
+   collapse_music = Mix_LoadMUS("sound/collapse.mp3");
+   victory_music = Mix_LoadMUS("sound/victory.mp3");
+   death_music = Mix_LoadMUS("sound/death.mp3");
+
+   if (!main_music) Fatal("Cannot load main.mp3\n");
+   if (!collapse_music) Fatal("Cannot load collapse.mp3\n");
+   if (!victory_music) Fatal("Cannot load victory.mp3\n");
+   if (!death_music) Fatal("Cannot load death.mp3\n");
+   //  Play main song
+   Mix_PlayMusic(main_music,-1);
+
+
    // Set up some values for the program
    setUp();
    //  Initialize GLUT
@@ -1677,5 +1707,9 @@ int main(int argc,char* argv[])
    collapseStart = glutGet(GLUT_ELAPSED_TIME);
    //  Pass control to GLUT so it can interact with the user
    glutMainLoop();
+   
+   // Shut down SDL
+   Mix_CloseAudio();
+   SDL_Quit();
    return 0;
 }
