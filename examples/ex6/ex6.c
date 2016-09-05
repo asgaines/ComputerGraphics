@@ -27,10 +27,10 @@
 //  Globals
 int th=0;       // Azimuth of view angle
 int ph=0;       // Elevation of view angle
-int mode=1;     // Dimension (1-4)
+int mode=4;     // Dimension (1-4)
 double z=0;     // Z variable
 double w=1;     // W variable
-double dim=2;   // Dimension of orthogonal box
+double dim=1;   // Dimension of orthogonal box
 char* text[] = {"","2D","3D constant Z","3D","4D"};  // Dimension display text
 
 /*
@@ -77,6 +77,7 @@ void display()
       glVertex2d(0.5,0.5);
       glVertex2d(0.7,0.7);
       glVertex2d(0.9,0.9);
+      glVertex2d(1.1,1.1);
       break;
    //  Three dimensions - constant Z
    case 2:
@@ -85,6 +86,7 @@ void display()
       glVertex3d(0.5,0.5,z);
       glVertex3d(0.7,0.7,z);
       glVertex3d(0.9,0.9,z);
+      glVertex3d(1.1,1.1,z);
       break;
    //  Three dimensions - variable Z
    case 3:
@@ -93,14 +95,16 @@ void display()
       glVertex3d(0.5,0.5,0.4);
       glVertex3d(0.7,0.7,0.6);
       glVertex3d(0.9,0.9,0.9);
+      glVertex3d(1.1,1.1,1.1);
       break;
    //  Four dimensions
    case 4:
       glVertex4d(0.1,0.1,0.1,w);
       glVertex4d(0.3,0.3,0.2,w);
       glVertex4d(0.5,0.5,0.4,w);
-      glVertex4d(0.7,0.7,0.6,w);
-      glVertex4d(0.9,0.9,0.9,w);
+      glVertex4d(0.7,0.7,0.7,w);
+      glVertex4d(0.9,0.9,1.1,w);
+      glVertex4d(1.1,1.1,1.6,w);
       break;
    }
    glEnd();
