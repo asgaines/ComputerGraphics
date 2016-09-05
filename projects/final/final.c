@@ -1418,6 +1418,16 @@ void checkCollision()
 }
 
 /*
+ * Controls what happens immediately after clicking on treasure
+ */
+void takeTreasure()
+{
+   treasureAcquired = true;
+   collapseStart = glutGet(GLUT_ELAPSED_TIME);
+   Mix_PlayMusic(collapse_music,-1);
+}
+
+/*
  *  GLUT calls this routine when a key is pressed
  */
 void keyboardKey(unsigned char ch,int x,int y)
@@ -1510,8 +1520,7 @@ void mouseButton(int button, int state, int x, int y)
                      if (camX < -34 && camZ < -110) {
                         if (keyAcquired) {
                            if (chestUnlocked && !treasureAcquired) {
-                              treasureAcquired = true;
-                              collapseStart = glutGet(GLUT_ELAPSED_TIME);
+                              takeTreasure();
                            }
                            chestUnlocked = true;
                         } else {
@@ -1523,8 +1532,7 @@ void mouseButton(int button, int state, int x, int y)
                      if (camX > 94 && camZ < -110) {
                         if (keyAcquired) {
                            if (chestUnlocked && !treasureAcquired) {
-                              treasureAcquired = true;
-                              collapseStart = glutGet(GLUT_ELAPSED_TIME);
+                              takeTreasure();
                            }
                            chestUnlocked = true;
                         } else {
@@ -1536,8 +1544,7 @@ void mouseButton(int button, int state, int x, int y)
                      if (camX < -6 && camZ > 50) {
                         if (keyAcquired) {
                            if (chestUnlocked && !treasureAcquired) {
-                              treasureAcquired = true;
-                              collapseStart = glutGet(GLUT_ELAPSED_TIME);
+                              takeTreasure();
                            }
                            chestUnlocked = true;
                         } else {
@@ -1549,9 +1556,7 @@ void mouseButton(int button, int state, int x, int y)
                      if (camX > 122 && camZ > 50) {
                         if (keyAcquired) {
                            if (chestUnlocked && !treasureAcquired) {
-                              treasureAcquired = true;
-                              collapseStart = glutGet(GLUT_ELAPSED_TIME);
-                              Mix_PlayMusic(collapse_music,-1);
+                              takeTreasure();
                            }
                            chestUnlocked = true;
                         } else {
