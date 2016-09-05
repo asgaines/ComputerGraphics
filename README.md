@@ -3,10 +3,10 @@
 Code for generating specific computer graphics projects running OpenGL. Each project marked point in time of learning to use OpenGL, final product in projects/final, 1 month after beginning to learn OpenGL.
 
 ## Project Progression
--projects/lorenz-attractor
--projects/basic_cave
--projects/lighting_textures
--projects/final
+- projects/lorenz-attractor
+- projects/basic_cave
+- projects/lighting_textures
+- projects/final
 
 Final project is first person game in cave. Objective: retrieve stolen treasure and escape.
 
