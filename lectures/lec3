@@ -1,5 +1,0 @@
-homogeneous coordinates
-    way of representing coordinates so that transformation easy
-
-OpenGL right multiplies, so read from glVertex backwards
-OpenGL matrix stored in column-major order
