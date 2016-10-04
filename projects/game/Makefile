@@ -1,5 +1,5 @@
 # Name of project
-EXE=final
+EXE=game
 
 # Main target
 all: $(EXE)
@@ -24,7 +24,7 @@ CLEAN=rm -f $(EXE) *.o *.a
 endif
 
 # Dependencies
-final.o: final.c CSCIx229.h
+game.o: game.c CSCIx229.h
 fatal.o: fatal.c CSCIx229.h
 loadtexbmp.o: loadtexbmp.c CSCIx229.h
 print.o: print.c CSCIx229.h
@@ -44,7 +44,7 @@ CSCIx229.a:fatal.o loadtexbmp.o print.o printsdl.o project.o errcheck.o object.o
 	g++ -c $(CFLG) $<
 
 #  Link
-final:final.o CSCIx229.a
+game:game.o CSCIx229.a
 	gcc -O3 -o $@ $^   $(LIBS) -lSDL -lSDL_mixer
 
 #  Clean
