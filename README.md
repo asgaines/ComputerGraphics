@@ -11,30 +11,30 @@ Code for generating specific computer graphics projects running OpenGL. Each pro
 - `./your-choice`
 
 ## Project Progression
-- projects/lorenz-attractor
-- projects/basic_cave
-- projects/lighting_textures
-- projects/final
+- [projects/lorenz-attractor](#lorenz-attractor)
+- [projects/basic_cave](#basic-cave)
+- [projects/lighting_textures](#lighting-textures)
+- [projects/game](#game)
 
-Final project is first person game in cave. Objective: retrieve stolen treasure and escape.
+Final project is first-person game in cave. Objective: retrieve stolen treasure and escape.
 
-## projects/lorenz-attractor
+## [Lorenz Attractor](projects/lorenz-attractor)
 
 First venture with OpenGL; proof of concept.
 
-## projects/basic_cave
+## [Basic Cave](projects/basic_cave)
 
 Basic blueprint of cave, simple shapes, colors, perspective/orthogonal manipulations.
 
-## projects/lighting_textures
+## [Lighting Textures](projects/lighting_textures)
 
-basic_cave with lighting and textures included.
+`Basic Cave`, now with lighting and textures included.
 
-## projects/final
+## [Game](projects/game)
 
 The final product. Gameplay features include: collision detection, narrative implementation, first person movement, objectives
 
-## Screenshots of Final
+## Screenshots of Game
 
 Crystals and stalagmites decorating the cave.
 ![screenshot of crystal](screenshots/crystal.png)
